@@ -25,7 +25,7 @@ class _SearchInputState extends State<SearchInput> {
     return isSpeechAvailable && isTtsAvailable;
   }
 
-  Future<void> _search(String query) async {
+ Future<void> _search(String query) async {
   if (query.isEmpty) return;
 
   setState(() {
@@ -34,21 +34,25 @@ class _SearchInputState extends State<SearchInput> {
   });
 
   try {
-    final pdfUrl = Uri.parse("http://127.0.0.1:8000/buscar/?query=$query");
-    final response = await http.get(pdfUrl);
+    final uri = Uri.parse("http://127.0.0.1:8000/buscar/"); // Asegúrate de que FastAPI tenga el endpoint correcto
+    final response = await http.post(
+      uri,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"query": query}), // Enviamos el query en JSON
+    );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      String botResponde = data['respuesta'];
+      String botResponse = data['respuesta'];
 
       setState(() {
-        _results.add("🤖: $botResponde");
+        _results.add("🤖: $botResponse");
         _isLoading = false;
       });
-      _speak(botResponde);
+      _speak(botResponse);
     } else {
       setState(() {
-        _results.add("❌ Error al obtener respuesta");
+        _results.add("❌ Error al obtener respuesta (${response.statusCode})");
         _isLoading = false;
       });
     }
@@ -59,7 +63,6 @@ class _SearchInputState extends State<SearchInput> {
     });
   }
 }
-
 
 String limpiarTexto(String texto) {
   texto = texto.replaceAll(RegExp(r'\\boxed\{|\}'), '');
