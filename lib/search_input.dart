@@ -26,38 +26,21 @@ class _SearchInputState extends State<SearchInput> {
   }
 
   Future<void> _search(String query) async {
-    if (query.isEmpty) return;
+  if (query.isEmpty) return;
 
-    setState(() {
-      _isLoading = true; // Muestra el indicador de carga
-      _results.add("👤: $query");
-    });
+  setState(() {
+    _isLoading = true;
+    _results.add("👤: $query");
+  });
 
-    const apiKey =
-        "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";
-    final url = Uri.parse(
-        'https://openrouter.ai/api/v1/chat/completions'); // Reemplaza con la URL real de DeepSeek
-    final response = await http.post(
-      url,
-      headers: {
-        "Authorization": "Bearer $apiKey",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "<YOUR_SITE_URL>",
-        "X-Title": "<YOUR_SITE_NAME>"
-      },
-      body: jsonEncode({
-        "model": "deepseek/deepseek-r1-zero:free",
-        "messages": [
-          {"role": "user", "content": query}
-        ]
-      }),
-    );
+  try {
+    final pdfUrl = Uri.parse("http://127.0.0.1:8000/buscar/?query=$query");
+    final response = await http.get(pdfUrl);
 
     if (response.statusCode == 200) {
-      final body = utf8.decode(response.bodyBytes); // Decodifica en UTF-8
-      final data = json.decode(body); // convertir a JSON
-      String botResponde = data['choices'][0]['message']['content'];
-      botResponde = limpiarTexto(botResponde);
+      final data = json.decode(response.body);
+      String botResponde = data['respuesta'];
+
       setState(() {
         _results.add("🤖: $botResponde");
         _isLoading = false;
@@ -65,11 +48,18 @@ class _SearchInputState extends State<SearchInput> {
       _speak(botResponde);
     } else {
       setState(() {
-         _results.add("❌ Error al obtener respuesta");
+        _results.add("❌ Error al obtener respuesta");
         _isLoading = false;
       });
     }
+  } catch (e) {
+    setState(() {
+      _results.add("❌ Error de conexión: $e");
+      _isLoading = false;
+    });
   }
+}
+
 
 String limpiarTexto(String texto) {
   texto = texto.replaceAll(RegExp(r'\\boxed\{|\}'), '');
@@ -91,7 +81,6 @@ Future<void> _startListening() async {
         },
       );
     } else {
-      print("No se pudo inicializar el micrófono.");
     }
   }
 
@@ -108,8 +97,8 @@ Future<void> _startListening() async {
       await _tts.setLanguage("es-ES");
       await _tts.setPitch(1.0);
       await _tts.speak(text);
+    // ignore: empty_catches
     } catch (e) {
-      print("Error al intentar hablar: $e");
     }
   }
 

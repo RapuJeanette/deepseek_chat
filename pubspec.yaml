@@ -34,6 +34,9 @@ dependencies:
   flutter_dotenv: ^5.0.2
   speech_to_text: ^6.1.1
   flutter_tts: ^3.7.0
+  pdf: ^3.6.0  
+  path_provider: ^2.0.0
+  flutter_pdfview: ^1.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -62,9 +65,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+      - data/Ley.pdf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
